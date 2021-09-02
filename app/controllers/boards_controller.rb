@@ -6,12 +6,20 @@ before_action :set_target_board, only: %i[show edit update destroy]
   end
 
   def new
-    @board = Board.new
+    @board = Board.new(flash[:board])
   end
 
   def create
-    board = Board.create(board_params)
-    redirect_to board
+    board = Board.new(board_params)
+    if board.save
+      flash[:notice] = "「#{board.title}」の掲示板を掲載しました"
+      redirect_to board
+    else
+      redirect_to new_board_path, flash: {
+        board: board,
+        error_messages: board.errors.full_messages
+      }
+    end
   end
 
   def show
@@ -27,7 +35,8 @@ before_action :set_target_board, only: %i[show edit update destroy]
   end
 
   def destroy
-    board.delete
+    @board.delete
+    redirect_to boards_path,flash: {notice: "「#{@board.title}」の掲示板が削除されました"}
   end
   
   private
